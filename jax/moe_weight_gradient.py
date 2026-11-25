@@ -22,6 +22,18 @@ def solve(
     #     mult = X.T @ dY_masked
     #     dw = dw.at[i].set(X.T @ dY_masked)
     # return dw
+
+
+    # jax.lax.ragged_dot_general() can cause OOM
+    # sizes = group_offsets[1:] - group_offsets[:-1]
+
+    # dim_nums = jax.lax.RaggedDotDimensionNumbers(
+    #     dot_dimension_numbers=(((0,), (0,)), ((), ())),  # contract k (axis 1 of both)
+    #     lhs_ragged_dimensions=[0],                       # m (axis 0 of lhs) is ragged
+    #     rhs_group_dimensions=[],                         # g (axis 0 of rhs) is group dim
+    # )
+    # return jax.lax.ragged_dot_general(X, dY, sizes, dim_nums, preferred_element_type=jnp.float32)
+    
     output = jnp.zeros((group_offsets.shape[0]-1, X.shape[1], dY.shape[1]))
     def one_expert(i, output):
         y_mask = dY
